@@ -7,48 +7,71 @@
 
 import Foundation
 
-struct SingleLadderGame {
-    struct LadderPlayer {
-        var name = ""
-    }
-    
+
+struct LadderPlayer {
+    var name = ""
+}
+
+class UserInput {
     static func readHeight() -> Int {
         print("사다리 높이를 입력해주세요.")
         let height = readLine() ?? ""
+        
         return Int(height) ?? 0
     }
     
-    static func readPlayerNames() -> [String] {
+    class func readPlayerNames() -> [String] {
         print("참여할 사람 이름을 입력하세요.")
         let players = readLine() ?? ""
-        return players.split(separator: ",").map{String($0)}
+        
+        return players
+            .split(separator: ",")
+            .map{String($0)}
     }
+}
+
+class ViewModel {
     
     var height = 0
-    var players = [LadderPlayer]()
+    var players: [LadderPlayer]
     
-    mutating func run() {
-        self.height = SingleLadderGame.readHeight()
-        let names = SingleLadderGame.readPlayerNames()
+    init() {
+        players = [LadderPlayer]()
+    }
+    
+    func run(printHandler: (Int, [LadderPlayer]) -> Void) {
+        self.height = UserInput.readHeight()
+        let names = UserInput.readPlayerNames()
         self.players = names.map({LadderPlayer(name:$0)})
-        printLadders()
+        printHandler(self.height, self.players)
+    }
+}
+
+struct SingleLadderGame {
+    
+    let viewModel: ViewModel
+    
+    init () {
+        viewModel = ViewModel()
     }
     
     func printLadders() {
-        for _ in 0..<height {
-            print("|", terminator:"")
-            for _ in 0..<players.count {
-                if Int(arc4random_uniform(2))==1 {
-                    print("---", "|", separator:"", terminator:"")
+        viewModel.run { height, players in
+            for _ in 0..<height {
+                print("|", terminator:"")
+                for _ in 0 ..< players.count - 1 {
+                    if Int(arc4random_uniform(2)) == 1 {
+                        print("---", "|", separator:"", terminator:"")
+                    } else {
+                        print("   ", "|", separator:"", terminator:"")
+                    }
                 }
-                else {
-                    print("   ", "|", separator:"", terminator:"")
-                }
+                print()
             }
-            print()
         }
     }
 }
 
 var game = SingleLadderGame()
-game.run()
+game.printLadders()
+
